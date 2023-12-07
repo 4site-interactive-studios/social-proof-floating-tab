@@ -1,0 +1,26 @@
+<!doctype html>
+
+<html>
+  <head>
+    <script type='text/javascript' src='https://4site-interactive-studios.github.io/social-proof-floating-tab/src/fsp-floating-tab.js'></script>
+  </head>
+
+  <body>
+    <h1>Hello world.</h1>
+
+    <script>
+      const floatingTab = FSPFloatingTab.initialize({
+        actionText: 'Give now!',
+        actionUrl: '/',
+
+        messages: [
+          { title: 'Donor 1 gave $100.00!', subtitle: 'Join the fight!' },
+          { title: 'Donor 2 gave $150.00!', subtitle: 'Join the fight!' },
+          { title: 'Donor 3 gave $120.00!', subtitle: 'Join the fight!' },
+        ]
+      });
+
+      floatingTab.start();
+    </script>
+  </body>
+</html>
