@@ -221,6 +221,10 @@ const FSPFloatingTab = {
         border: 2px solid black;
 
         font-family: sans-serif;
+
+        -ms-user-select: none;
+        -webkit-user-select: none;
+        user-select: none;
       }
 
       @media (prefers-reduced-motion: no-preference) {
