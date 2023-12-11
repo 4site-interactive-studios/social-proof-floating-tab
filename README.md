@@ -17,21 +17,21 @@ A browser-based JavaScript library which displays a floating tab with customizab
       actionText: 'Give Now!',
       actionUrl: 'https://mydonationpage.com',
 
-      // Optional: Enable Google Tag Manager integration.
-      GoogleTagDataLayer: window.dataLayer,
-
-      // Optional: Enables console logging for development.
-      devMode: false,
-
       messages: [
         { title: 'Donor 1 gave $100.00!', subtitle: 'Join the fight!' },
         { title: 'Donor 2 gave $50.00!', subtitle: 'Join the fight!' },
         { title: 'Donor 3 gave $150.00!', subtitle: 'Join the fight!' },
       ],
+
+      // Optional: Enable Google Tag Manager integration.
+      GTMDataLayer: window.dataLayer,
+
+      // Optional: Enables console logging for development.
+      devMode: false,
     });
 
     // Show the tab and start rotating messages.
-    floatingTab.start({ force: false });
+    floatingTab.start();
   </script>
 </body>
 ```
