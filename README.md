@@ -14,11 +14,11 @@ A browser-based JavaScript library which displays a floating tab with customizab
 
   <script>
     const floatingTab = FSPFloatingTab.initialize({
-      // Optional: Enable Google Tag Manager integration.
-      GoogleTagDataLayer: window.dataLayer,
-
       actionText: 'Give Now!',
       actionUrl: 'https://mydonationpage.com',
+
+      // Optional: Enable Google Tag Manager integration.
+      GoogleTagDataLayer: window.dataLayer,
 
       // Optional: Enables console logging for development.
       devMode: false,
@@ -32,9 +32,6 @@ A browser-based JavaScript library which displays a floating tab with customizab
 
     // Show the tab and start rotating messages.
     floatingTab.start({ force: false });
-
-    // Hide the tab.
-    floatingTab.stop();
   </script>
 </body>
 ```
