@@ -113,7 +113,6 @@ const FSPFloatingTab = {
 
     function show() {
       if (!state.hasBeenShown) {
-        state.showing = true;
         state.hasBeenShown = true;
 
         // Logic to execute only when the tab is first shown.
