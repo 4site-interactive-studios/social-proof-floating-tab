@@ -11,8 +11,8 @@ const FSPFloatingTab = {
     // --------------------------------------------
     // Initialize state.
 
-    const timeHidden = 10000;
-    const timeShowing = 4000;
+    const timeHidden = 1000;
+    const timeShowing = 5000;
 
     const state = {
       currentMessage: null,
