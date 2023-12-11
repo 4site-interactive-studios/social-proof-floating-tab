@@ -14,8 +14,14 @@ A browser-based JavaScript library which displays a floating tab with customizab
 
   <script>
     const floatingTab = FSPFloatingTab.initialize({
+      // Optional: Enable Google Tag Manager integration.
+      GoogleTagDataLayer: window.dataLayer,
+
       actionText: 'Give Now!',
       actionUrl: 'https://mydonationpage.com',
+
+      // Optional: Enables console logging for development.
+      devMode: false,
 
       messages: [
         { title: 'Donor 1 gave $100.00!', subtitle: 'Join the fight!' },
@@ -68,8 +74,10 @@ Initializes an instance of the floating tab.
 
 | Property | Type | Required | Description |
 | :-- | :-- | :-- | :-- |
+| `GTMDataLayer` | Object | Optional | If given, this should be [the `dataLayer` object provided by `gtm.js`](https://developers.google.com/tag-platform/tag-manager/datalayer). See [Google Tag Manager Integration](#google-tag-manager-integration) for details. |
 | `actionText` | String | Required | The text of the action button. |
 | `actionUrl` | String | Required | The URL to open in a new window when a user clicks the action button. |
+| `devMode` | Boolean | Optional | If `true`, outputs logs to the console. |
 | `messages` | Array[[Message](#message-object)] | Required | At least 2 messages to display at random. See [Message Object](#message-object) for object structure. |
 
 ##### Message Object
@@ -115,6 +123,16 @@ Hides the floating tab.
   floatingTab.stop();
 </script>
 ```
+
+## Google Tag Manager Integration
+
+If configured (see [Configuration Object](#configuration-object)), the following events will be pushed to the GTM `dataLayer` array:
+
+| Situation | Event |
+| :-- | :-- |
+| The floating tab is first shown to the user in the current session. | `floatingTabView` |
+| The user clicks on the tab (except for the Close button). | `floatingTabClicked` |
+| The uses clicks the Close button. | `floatingTabClosed` |
 
 ## Development
 

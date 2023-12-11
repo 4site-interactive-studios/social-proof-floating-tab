@@ -1,20 +1,28 @@
 const FSPFloatingTab = {
-  initialize(config) {
-    // --------------------------------------------
-    // Create the component and shadow DOM.
-
-    const componentElement = document.createElement('div');
-    componentElement.id = 'fsp-floating-tab-component';
-
-    const componentTree = componentElement.attachShadow({ mode: 'open' });
+  initialize(config = {}) {
+    const dependencies = {
+      // Null object for Google Tag Data Layer in case no object
+      // is passed.
+      GTMDataLayer: config.GTMDataLayer || {
+        push(data) {
+          if (config.devMode) {
+            console.log('[FSP GTMDataLayer] Pushed:');
+            console.log(data);
+          }
+        }
+      }
+    }
 
     // --------------------------------------------
     // Initialize state.
 
-    const timeHidden = 1000;
-    const timeShowing = 5000;
+    const timeToHide = 1000;
+    const timeToShow = 5000;
 
     const state = {
+      hasBeenRecentlyClosed: getRecentlyClosedStatus(),
+      hasBeenShown: false,
+      showing: false,
       message: null,
       timer: null,
 
@@ -25,6 +33,16 @@ const FSPFloatingTab = {
     }
 
     state.message = state.messages[0];
+
+    // --------------------------------------------
+    // Create the initial component and shadow DOM.
+
+    const componentElement = document.createElement('div');
+    componentElement.addEventListener('mouseover', handleStartHovering);
+    componentElement.addEventListener('mouseout', handleStopHovering);
+    componentElement.id = 'fsp-floating-tab-component';
+
+    const componentTree = componentElement.attachShadow({ mode: 'open' });
 
     // --------------------------------------------
     // Handle re-renders.
@@ -44,43 +62,86 @@ const FSPFloatingTab = {
     }
 
     // --------------------------------------------
-    // State Change Methods
+    // Event Listeners
 
-    const sequence = {
-      hide() {
-        hideFloatingTab();
-        visibilityTimer.prepareToShow();
-      },
+    function handleAction(event) {
+      event.preventDefault();
 
-      show() {
-        switchMessage();
-        showFloatingTab();
-        visibilityTimer.prepareToHide();
+      dependencies.GTMDataLayer.push({
+        'event': 'floatingTabClicked',
+      });
+
+      window.open(config.actionUrl, '_blank');
+    }
+
+    function handleClose(event) {
+      event.preventDefault();
+
+      hide();
+      stopVisibilitySequence();
+      setClosedAtTime();
+
+      dependencies.GTMDataLayer.push({
+        'event': 'floatingTabClosed',
+      });
+    }
+
+    function handleStartHovering() {
+      if (state.showing) {
+        stopVisibilitySequence();
       }
     }
 
-    const visibilityTimer = {
-      clear() {
-        state.timer = clearTimeout(state.timer);
-      },
-
-      prepareToHide() {
-        state.timer = setTimeout(sequence.hide, timeShowing);
-      },
-
-      prepareToShow() {
-        state.timer = setTimeout(sequence.show, timeHidden);
+    function handleStopHovering() {
+      if (state.showing) {
+        startVisibilitySequence();
       }
     }
 
-    function hideFloatingTab() {
+    // --------------------------------------------
+    // State Change Methods: Base
+
+    function hide() {
       state.showing = false;
       render();
     }
 
-    function showFloatingTab() {
+    function show() {
+      if (!state.hasBeenShown) {
+        state.showing = true;
+        state.hasBeenShown = true;
+
+        // Logic to execute only when the tab is first shown.
+        dependencies.GTMDataLayer.push({
+          'event': 'floatingTabView',
+        });
+      }
+
       state.showing = true;
       render();
+    }
+
+    function startVisibilitySequence() {
+      if (state.showing) {
+        state.timer = setTimeout(() => {
+          hide();
+          startVisibilitySequence();
+        }, timeToShow);
+      }
+
+      if (!state.showing) {
+        state.timer = setTimeout(() => {
+          show();
+          startVisibilitySequence();
+        }, timeToHide);
+      }
+    }
+
+    function stopVisibilitySequence() {
+      if (state.timer) {
+        clearTimeout(state.timer);
+        state.timer = null;
+      }
     }
 
     // Switch to a random message that:
@@ -110,16 +171,11 @@ const FSPFloatingTab = {
     }
 
     // --------------------------------------------
-    // Helper Methods
-
-    function closeFloatingTab() {
-      localStorage.setItem('fsp-floating-tab__closedAt', new Date().getTime());
-      hideFloatingTab();
-    }
+    // General Helpers
 
     // Checks if the floating tab has been closed within the last 24 hours.
-    function hasBeenRecentlyClosed() {
-      const closedAt = localStorage.getItem('fsp-floating-tab__closedAt');
+    function getRecentlyClosedStatus() {
+      const closedAt = getClosedAtTime();
 
       if (closedAt) {
         const now = new Date().getTime();
@@ -129,6 +185,14 @@ const FSPFloatingTab = {
       }
 
       return false;
+    }
+
+    function setClosedAtTime() {
+      localStorage.setItem('fsp-floating-tab__closedAt', new Date().getTime());
+    }
+
+    function getClosedAtTime() {
+      return localStorage.getItem('fsp-floating-tab__closedAt');
     }
 
     // --------------------------------------------
@@ -187,6 +251,7 @@ const FSPFloatingTab = {
       }
 
       #fsp-floating-tab a {
+        color: inherit;
         text-decoration: none;
       }
 
@@ -263,8 +328,6 @@ const FSPFloatingTab = {
     const tabElement = document.createElement('div');
     tabElement.id = 'fsp-floating-tab';
     tabElement.setAttribute('data-showing', 'false');
-    tabElement.addEventListener('mouseover', visibilityTimer.clear);
-    tabElement.addEventListener('mouseout', visibilityTimer.prepareToHide);
 
     componentTree.appendChild(tabElement);
 
@@ -273,10 +336,7 @@ const FSPFloatingTab = {
 
     const tabMainElement = document.createElement('div');
     tabMainElement.className = 'fsp-floating-tab__main';
-
-    tabMainElement.addEventListener('click', () => {
-      window.open(config.actionUrl, '_blank');
-    });
+    tabMainElement.addEventListener('click', handleAction);
 
     tabElement.appendChild(tabMainElement);
 
@@ -315,12 +375,13 @@ const FSPFloatingTab = {
     actionButtonElement.href = config.actionUrl;
     actionButtonElement.target = '_blank';
     actionButtonElement.innerHTML = config.actionText;
+    actionButtonElement.addEventListener('click', handleAction);
     buttonsElement.appendChild(actionButtonElement);
 
     const closeButtonElement = document.createElement('a');
     closeButtonElement.className = 'fsp-floating-tab__buttons__close'
     closeButtonElement.innerHTML = 'Close';
-    closeButtonElement.addEventListener('click', closeFloatingTab);
+    closeButtonElement.addEventListener('click', handleClose);
     buttonsElement.appendChild(closeButtonElement);
 
     tabElement.appendChild(buttonsElement);
@@ -334,16 +395,20 @@ const FSPFloatingTab = {
 
     return {
       start(options = {}) {
-        if (!hasBeenRecentlyClosed() && options.force !== true) {
-          switchMessage();
-          setTimeout(showFloatingTab, 0);
-          state.timer = setTimeout(sequence.hide, timeShowing);
+        if (!state.hasBeenRecentlyClosed && options.force !== true) {
+          show();
+          startVisibilitySequence();
+          return;
+        }
+
+        if (config.devMode) {
+          console.log('[FSP] Tab was recently closed. Not starting.');
         }
       },
 
       stop() {
-        clearTimeout(state.timer);
-        setTimeout(hideFloatingTab, 0);
+        stopVisibilitySequence();
+        hide();
       }
     }
   }
