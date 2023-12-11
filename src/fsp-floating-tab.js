@@ -202,6 +202,8 @@ const FSPFloatingTab = {
       .fsp-floating-tab__main__icon {
         height: 30px;
         width: 30px;
+        min-height: 30px;
+        min-width: 30px;
         margin-left: 0.75rem;
 
         background-size: contain;
