@@ -16,7 +16,7 @@ const FSPFloatingTab = {
 
     const state = {
       currentMessage: null,
-      sequenceTimeout: null,
+      timer: null,
 
       messages: config.messages.map(message => ({
         ...message,
@@ -45,6 +45,33 @@ const FSPFloatingTab = {
 
     // --------------------------------------------
     // State Change Methods
+
+    const sequence = {
+      hide() {
+        hideFloatingTab();
+        visibilityTimer.prepareToShow();
+      },
+
+      show() {
+        switchMessage();
+        showFloatingTab();
+        visibilityTimer.prepareToHide();
+      }
+    }
+
+    const visibilityTimer = {
+      clear() {
+        state.timer = clearTimeout(state.timer);
+      },
+
+      prepareToHide() {
+        state.timer = setTimeout(sequence.hide, timeShowing);
+      },
+
+      prepareToShow() {
+        state.timer = setTimeout(sequence.show, timeHidden);
+      }
+    }
 
     function hideFloatingTab() {
       state.showing = false;
@@ -84,19 +111,6 @@ const FSPFloatingTab = {
 
     // --------------------------------------------
     // Helper Methods
-
-    const sequence = {
-      hide() {
-        hideFloatingTab();
-        setTimeout(sequence.show, timeHidden);
-      },
-
-      show() {
-        switchMessage();
-        showFloatingTab();
-        setTimeout(sequence.hide, timeShowing);
-      }
-    }
 
     function closeFloatingTab() {
       localStorage.setItem('fsp-floating-tab__closedAt', new Date().getTime());
@@ -247,6 +261,8 @@ const FSPFloatingTab = {
     const tabElement = document.createElement('div');
     tabElement.id = 'fsp-floating-tab';
     tabElement.setAttribute('data-showing', 'false');
+    tabElement.addEventListener('mouseover', visibilityTimer.clear);
+    tabElement.addEventListener('mouseout', visibilityTimer.prepareToHide);
 
     componentTree.appendChild(tabElement);
 
@@ -319,12 +335,12 @@ const FSPFloatingTab = {
         if (!hasBeenRecentlyClosed() && options.force !== true) {
           switchMessage();
           setTimeout(showFloatingTab, 0);
-          state.sequenceTimeout = setTimeout(sequence.hide, timeShowing);
+          state.timer = setTimeout(sequence.hide, timeShowing);
         }
       },
 
       stop() {
-        clearTimeout(state.sequenceTimeout);
+        clearTimeout(state.timer);
         setTimeout(hideFloatingTab, 0);
       }
     }
