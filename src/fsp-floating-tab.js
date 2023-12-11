@@ -15,7 +15,7 @@ const FSPFloatingTab = {
     const timeShowing = 5000;
 
     const state = {
-      currentMessage: null,
+      message: null,
       timer: null,
 
       messages: config.messages.map(message => ({
@@ -24,7 +24,7 @@ const FSPFloatingTab = {
       })),
     }
 
-    state.currentMessage = state.messages[0];
+    state.message = state.messages[0];
 
     // --------------------------------------------
     // Handle re-renders.
@@ -36,11 +36,11 @@ const FSPFloatingTab = {
 
       componentTree
         .querySelector('.fsp-floating-tab__main__message__title')
-        .innerHTML = state.currentMessage.title;
+        .innerHTML = state.message.title;
 
       componentTree
         .querySelector('.fsp-floating-tab__main__message__subtitle')
-        .innerHTML = state.currentMessage.subtitle;
+        .innerHTML = state.message.subtitle;
     }
 
     // --------------------------------------------
@@ -88,7 +88,7 @@ const FSPFloatingTab = {
     // - Has not just been seen.
     function switchMessage() {
       const possibleMessages = state.messages
-        .filter(message => message.title !== state.currentMessage.title)
+        .filter(message => message.title !== state.message.title)
         .filter(message => !message.hasBeenSeen);
 
       // Start over if the user has seen all the possible messages.
@@ -103,8 +103,8 @@ const FSPFloatingTab = {
 
       const nextMessage = possibleMessages[Math.floor(Math.random() * possibleMessages.length)];
 
-      state.currentMessage = nextMessage;
-      state.currentMessage.hasBeenSeen = true;
+      state.message = nextMessage;
+      state.message.hasBeenSeen = true;
 
       render();
     }
