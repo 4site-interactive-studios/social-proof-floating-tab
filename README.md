@@ -120,6 +120,10 @@ Hides the floating tab.
   });
 
   floatingTab.start({ force: true });
+
+  // Once the floating tab has been started, this instance method
+  // can be called at any time to hide it and stop it from appearing
+  // further in the user's current session.
   floatingTab.stop();
 </script>
 ```
