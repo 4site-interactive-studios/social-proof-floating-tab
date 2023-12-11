@@ -48,9 +48,12 @@ const FSPFloatingTab = {
     // Handle re-renders.
 
     function render() {
-      componentTree
-        .querySelector('#fsp-floating-tab')
-        .setAttribute('data-showing', state.showing);
+      const renderedFloatingTab = componentTree.querySelector('#fsp-floating-tab');
+
+      // Dynamically set the bottom position of the tab in case it spans multiple
+      // lines.
+      const renderedBottomOffset = (renderedFloatingTab.offsetHeight * -1) - 25;
+      renderedFloatingTab.style.bottom = `${ renderedBottomOffset }px`;
 
       componentTree
         .querySelector('.fsp-floating-tab__main__message__title')
@@ -59,6 +62,8 @@ const FSPFloatingTab = {
       componentTree
         .querySelector('.fsp-floating-tab__main__message__subtitle')
         .innerHTML = state.message.subtitle;
+
+      renderedFloatingTab.setAttribute('data-showing', state.showing);
     }
 
     // --------------------------------------------
@@ -131,6 +136,7 @@ const FSPFloatingTab = {
 
       if (!state.showing) {
         state.timer = setTimeout(() => {
+          switchMessage();
           show();
           startVisibilitySequence();
         }, timeToHide);
@@ -199,8 +205,10 @@ const FSPFloatingTab = {
 
     const cssStyles = `
       #fsp-floating-tab {
+        /* Bottom position is set when the tab is initialized */
+        /* to prevent a flash of unstyled content. */
+
         position: fixed;
-        bottom: -115px;
         right: 0;
         margin: 1rem;
         max-width: 350px;
@@ -234,7 +242,7 @@ const FSPFloatingTab = {
       }
 
       #fsp-floating-tab[data-showing="true"] {
-        bottom: 0;
+        bottom: 0 !important;
       }
 
       #fsp-floating-tab *,
@@ -258,6 +266,7 @@ const FSPFloatingTab = {
       .fsp-floating-tab__main {
         display: flex;
         align-items: center;
+        padding: 0.5rem 0;
       }
 
       .fsp-floating-tab__main:hover {
@@ -285,23 +294,32 @@ const FSPFloatingTab = {
       #fsp-floating-tab
       .fsp-floating-tab__main__message__title {
         font-weight: 600;
-        line-height: 150%;
+        line-height: 125%;
       }
 
+      #fsp-floating-tab
       .fsp-floating-tab__main__message__subtitle {
-        line-height: 150%;
+        line-height: 125%;
+        margin-top: 0.25rem;
       }
 
       .fsp-floating-tab__buttons {
         border-left: 2px solid #F26824;
+        width: 100px;
+        min-width: 100px;
+        display: flex;
+        flex-direction: column;
       }
 
-      .fsp-floating-tab__buttons > a {
-        display: block;
+      .fsp-floating-tab__buttons > div {
+        display: flex;
+        align-items: center;
+
+        flex: 1;
         padding: 0.65rem;
       }
 
-      .fsp-floating-tab__buttons > a:hover {
+      .fsp-floating-tab__buttons > div:hover {
         background: #EBEBEB;
         cursor: pointer;
       }
@@ -370,19 +388,25 @@ const FSPFloatingTab = {
     const buttonsElement = document.createElement('div');
     buttonsElement.className = 'fsp-floating-tab__buttons';
 
-    const actionButtonElement = document.createElement('a');
+    const actionButtonElement = document.createElement('div');
     actionButtonElement.className = 'fsp-floating-tab__buttons__action'
-    actionButtonElement.href = config.actionUrl;
-    actionButtonElement.target = '_blank';
-    actionButtonElement.innerHTML = config.actionText;
     actionButtonElement.addEventListener('click', handleAction);
     buttonsElement.appendChild(actionButtonElement);
 
-    const closeButtonElement = document.createElement('a');
+    const actionButtonElementText = document.createElement('a');
+    actionButtonElementText.href = config.actionUrl;
+    actionButtonElementText.target = '_blank';
+    actionButtonElementText.innerHTML = config.actionText;
+    actionButtonElement.appendChild(actionButtonElementText);
+
+    const closeButtonElement = document.createElement('div');
     closeButtonElement.className = 'fsp-floating-tab__buttons__close'
-    closeButtonElement.innerHTML = 'Close';
     closeButtonElement.addEventListener('click', handleClose);
     buttonsElement.appendChild(closeButtonElement);
+
+    const closeButtonElementText = document.createElement('span');
+    closeButtonElementText.innerHTML = 'Close';
+    closeButtonElement.appendChild(closeButtonElementText);
 
     tabElement.appendChild(buttonsElement);
 
