@@ -417,12 +417,16 @@ const FSPFloatingTab = {
 
     document.body.appendChild(componentElement);
 
+    // Start hidden in case tab is inactive to start,
+    // and so that starting triggers the pop-up animation.
+    hide();
+
     // --------------------------------------------
     // Instance Methods
 
     return {
       start(options = {}) {
-        if (!state.hasBeenRecentlyClosed && options.force !== true) {
+        if (!state.hasBeenRecentlyClosed || options.force === true) {
           show();
           startVisibilitySequence();
           return;
