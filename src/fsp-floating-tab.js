@@ -418,7 +418,10 @@ const FSPFloatingTab = {
     document.body.appendChild(componentElement);
 
     // Start hidden in case tab is inactive to start,
-    // and so that starting triggers the pop-up animation.
+    // such as when it has been recently closed.
+    //
+    // Also so that starting triggers the pop-up
+    // animation.
     hide();
 
     // --------------------------------------------
@@ -426,15 +429,16 @@ const FSPFloatingTab = {
 
     return {
       start(options = {}) {
-        if (!state.hasBeenRecentlyClosed || options.force === true) {
-          show();
-          startVisibilitySequence();
+        if (state.hasBeenRecentlyClosed && options.force !== true) {
+          if (config.devMode) {
+            console.log('[FSP] Tab was recently closed. Not starting.');
+          }
+
           return;
         }
 
-        if (config.devMode) {
-          console.log('[FSP] Tab was recently closed. Not starting.');
-        }
+        show();
+        startVisibilitySequence();
       },
 
       stop() {
